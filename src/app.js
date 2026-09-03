@@ -2,9 +2,16 @@ const express = require('express');
 
 const app = express();
 
-app.use((req, res) =>  {
-  res.send("Hello from the server!");
-});
+const adminAuth = require('./middleware/auth');   
+
+app.get("/user/:userId/:name/:password", (req, res) => {
+  console.log(req.params);
+  res.send({ firstName: "Ayush", lastName: "Nagar" });
+});   
+
+// app.use((req, res) =>  {
+//   res.send("Hello from the server!");
+// });
 
 
 
