@@ -7,22 +7,42 @@ app.use(express.json());
 
 
 app.post("/signup", async (req, res) => {
-        const user = new User({
-    firstName : req.body.firstName,
-    lastName : req.body.lastName,
-    emailId : req.body.emailId,
-    password : req.body.password,
-    age : req.body.age,
-    gender : req.body.gender,
-        });
+        const user = new User(req.body);
+
+        try {
 
         await user.save()
-
         res.send("User added successfully");
 
-      });
+        } catch (err) {
+            res.status(400).send("Error saving the user:" + err.message);
+        }
+});
 
+// Get user by email 
+app.get("/user", async (req, res) => {
+    const userEmail = req.body.emailId;
 
+   try {
+    console.log("userEmail", userEmail);
+     const users =  await User.findOne({ emailId: userEmail });
+     res.send(users);
+     
+    // if(user.length === 0){
+    //     return res.status(404).send("User not found");
+    // }
+   //  res.send(users);}
+   
+    } catch (err) {
+        res.status(400).send("Error fetching the user:" + err.message);
+    }
+})
+
+// feed API - GET/FEED - get all the users from the database
+app.get("/feed", async (req, res) => {
+    
+
+});
 
 connectDB()
 .then(() => {
