@@ -41,23 +41,25 @@ console.log("passwordHash", passwordHash);
 });
 
 app.post("/login", async (req, res) => {
-    const { emailId, password } = req.body;
 
     try {
-        const user = await User.findOne({ emailId });
+        const { emailId, password } = req.body;
+
+        const user = await User.findOne({ emailId: emailId });
         if (!user) {
-            return res.status(404).send("User not found");
+            throw new Error("EmailID is not present in the database");
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-            return res.status(401).send("Invalid password");
-        }
 
-        res.send("Login successful");
+        if (!isPasswordValid) {
+            res.send("Login successful!!!");
+        } else {
+            throw new Error("Password not correct");
+        }
     } catch (err) {
-        res.status(400).send("Error during login: " + err.message);
-    }
+        res.status(400).send("Error: " + err.message);
+    }   
 });
 
 // Get user by email 
