@@ -3,29 +3,61 @@ const connectDB = require ("./config/database");
 const app = express();
 const User = require("./models/user");
 const { validateSignupData } = require("./utils/validation");
+const bcrypt = require("bcrypt");
 
 app.use(express.json());
 
 
 app.post("/signup", async (req, res) => {
+    try {
+
 // Validation of Data
 validateSignupData(req);
+const { firstName, lastName, emailId, password, age, gender, } = req.body;
 
 
 // Encrypt the password
-
+const passwordHash = await bcrypt.hash(password, 10);
+console.log("passwordHash", passwordHash);
 
 
 // Create a new user instance and save it to the database
-        const user = new User(req.body);
+        const user = new User({
+            firstName,
+            lastName,
+            emailId,
+            password: passwordHash, 
+            age,
+            gender,
+        });
 
-        try {
+        
 
         await user.save()
         res.send("User added successfully");
         } catch (err) {
             res.status(400).send("ERROR : " + err.message);
         }
+});
+
+app.post("/login", async (req, res) => {
+    const { emailId, password } = req.body;
+
+    try {
+        const user = await User.findOne({ emailId });
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).send("Invalid password");
+        }
+
+        res.send("Login successful");
+    } catch (err) {
+        res.status(400).send("Error during login: " + err.message);
+    }
 });
 
 // Get user by email 

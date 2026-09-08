@@ -14,6 +14,7 @@
   "author": "Ayush Nagar",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "express": "^5.2.1",
     "mongoose": "^9.9.4",
     "validator": "^13.15.35"

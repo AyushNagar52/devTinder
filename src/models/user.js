@@ -40,7 +40,7 @@ const userSchema = new mongoose.Schema({
     age: {
         type: Number,
         min: 18,
-        required: true
+        required: false,
     },
     gender: {
         type: String,
@@ -49,7 +49,7 @@ const userSchema = new mongoose.Schema({
                 throw new Error("Gender data is not valid");
             }
         },
-        required: true
+        required: false
     },
 
     photourl: {
