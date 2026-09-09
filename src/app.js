@@ -5,6 +5,7 @@ const User = require("./models/user");
 const { validateSignupData } = require("./utils/validation");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 
 app.use(express.json());
 app.use(cookieParser());
@@ -54,12 +55,16 @@ app.post("/login", async (req, res) => {
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
-        if (!isPasswordValid) {
+        if (isPasswordValid) {
+
         // Create JWT token and send it to the user
+        const token = jwt.sign({userId: user._id}, "DEV@Tinder$790");
+        console.log("token", token);
+
 
 
         // Add the Token to cookie and send it to the user
-        res.cookie("token", "ugyugeyfgdyugfcyudgfcygfyu");
+        res.cookie("token", token);
 
 
             res.send("Login successful!!!");
@@ -73,9 +78,18 @@ app.post("/login", async (req, res) => {
 
 app.get("/profile", async (req, res) => {
     const cookies = req.cookies;
+    
 
-    console.log(cookies);
-    res.send("Reading the Cookies");
+    const {token} = cookies;
+    
+
+    // Validate my token
+    const decodedMessage = await jwt.verify(token, "DEV@Tinder$790");    
+
+    console.log(decodedMessage);
+    
+    console.log("cookies", cookies);
+    res.send("Reading the Cookies");   
 });
 
 // Get user by email 
