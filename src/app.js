@@ -58,7 +58,7 @@ app.post("/login", async (req, res) => {
         if (isPasswordValid) {
 
         // Create JWT token and send it to the user
-        const token = jwt.sign({userId: user._id}, "DEV@Tinder$790");
+        const token = jwt.sign({_id: user._id}, "DEV@Tinder$790");
         console.log("token", token);
 
 
@@ -81,14 +81,14 @@ app.get("/profile", async (req, res) => {
     
 
     const {token} = cookies;
-    
-
     // Validate my token
+
     const decodedMessage = await jwt.verify(token, "DEV@Tinder$790");    
 
-    console.log(decodedMessage);
+    const {_id} = decodedMessage;
+    console.log("Logged in user is:"+ _id);
     
-    console.log("cookies", cookies);
+    
     res.send("Reading the Cookies");   
 });
 
@@ -117,10 +117,10 @@ app.get("/feed", async (req, res) => {
 
 // delete a user from the database 
 app.delete("/user", async (req, res) => {
-    const userId = req.body.userId;
+    const _id = req.body._id;
 
     try {
-        const user = await User.findByIdAndDelete(userId);
+        const user = await User.findByIdAndDelete(_id);
 
         res.send("User deleted successfully");
     } catch (err) {
@@ -129,8 +129,8 @@ app.delete("/user", async (req, res) => {
 });
 
 // Update data of the user
-app.patch("/user/:userId", async (req, res) => {
-    const userId = req.params?.userId;
+app.patch("/user/:_id", async (req, res) => {
+    const _id = req.params?._id;
     const data = req.body;
     try {
 
@@ -139,6 +139,7 @@ app.patch("/user/:userId", async (req, res) => {
      "about", 
      "gender", 
      "skills",
+     "age"
       ];   
 
 const isUpdateAllowed = Object.keys(data).every((k) =>
@@ -149,11 +150,11 @@ if (!isUpdateAllowed) {
     throw new Error("Update is not allowed ");
 }
 
- if (data?.skills.length > 10) {
+ if (Array.isArray(data.skills) && data.skills.length > 10) {
     throw new Error("Skills cannot be more than 10");
 }
 
-        const user = await User.findByIdAndUpdate({_id: userId}, data, {
+        const user = await User.findByIdAndUpdate({_id}, data, {
             returnDocument: "after",
             runValidators: true,
         });
@@ -174,6 +175,4 @@ app.listen(7777, () => {
 .catch((err) => {
     console.log(" Database connection is not established", err);
 });   
-
-
 
