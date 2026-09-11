@@ -59,9 +59,10 @@ app.post("/login", async (req, res) => {
         if (isPasswordValid) {
 
         // Create JWT token and send it to the user
-        const token = jwt.sign({_id: user._id}, "DEV@Tinder$790");
-        console.log("token", token);
-
+        
+        const token = jwt.sign({_id: user._id}, "DEV@Tinder$790", { 
+            expiresIn: "1d" 
+        });
 
 
         // Add the Token to cookie and send it to the user
@@ -78,23 +79,8 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/profile", userAuth, async (req, res) => {
-   try{ 
-    const cookies = req.cookies;
-    
-    const {token} = cookies;
-    if (!token) {
-        throw new Error("Invalid token");
-    }
-
-    const decodedMessage = await jwt.verify(token, "DEV@Tinder$790");    
-
-    const {_id} = decodedMessage;
-    console.log("Logged in user is:"+ _id);
-
-    const user = await User.findById(_id);
-    if (!user) {
-        throw new Error("User does not exist");
-    }
+   try{
+    const user = req.user;
 
     res.send(user);
     }  catch (err) {
@@ -173,6 +159,15 @@ if (!isUpdateAllowed) {
     } catch (err) {
         res.status(400).send("Something went wrong:" + err.message);
     }
+});
+
+app.post("/sendConnectionRequest", userAuth, async (req, res) => {
+    const user = req.user;
+
+    // Sending a connection request logic here
+    console.log("Sending a connection request");
+
+    res.send("Connection request sent successfully");
 });
 
 connectDB()
