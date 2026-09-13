@@ -1,90 +1,16 @@
 const express = require("express");
 const connectDB = require ("./config/database");
 const app = express();
-const User = require("./models/user");
-const { validateSignupData } = require("./utils/validation");
-const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-const jwt = require("jsonwebtoken");
-const { userAuth } = require("./middleware/auth");
 
 app.use(express.json());
 app.use(cookieParser());
 
-
-app.post("/signup", async (req, res) => {
-    try {
-
-// Validation of Data
-validateSignupData(req);
-const { firstName, lastName, emailId, password, age, gender, } = req.body;
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/request");
 
 
-// Encrypt the password
-const passwordHash = await bcrypt.hash(password, 10);
-console.log("passwordHash", passwordHash);
-
-
-// Create a new user instance and save it to the database
-        const user = new User({
-            firstName,
-            lastName,
-            emailId,
-            password: passwordHash, 
-            age,
-            gender,
-        });
-
-        
-
-        await user.save()
-        res.send("User added successfully");
-        } catch (err) {
-            res.status(400).send("ERROR : " + err.message);
-        }
-});
-
-app.post("/login", async (req, res) => {
-
-    try {
-        const { emailId, password } = req.body;
-
-        const user = await User.findOne({ emailId: emailId });
-        if (!user) {
-            throw new Error("Invalid credentials");
-        }
-
-        const isPasswordValid = await user.validatePassword(password);
-
-        if (isPasswordValid) {
-
-        // Create JWT token and send it to the user
-        
-        const token = await user.getJWT();
-
-
-        // Add the Token to cookie and send it to the user
-        res.cookie("token", token);
-
-
-            res.send("Login successful!!!");
-        } else {
-            throw new Error("Invalid credentials");
-        }
-    } catch (err) {
-        res.status(400).send("Error: " + err.message);
-    }   
-});
-
-app.get("/profile", userAuth, async (req, res) => {
-   try{
-    const user = req.user;
-
-    res.send(user);
-    }  catch (err) {
-        res.status(400).send("Error: " + err.message);
-    }  
-});
 
 // Get user by email 
 app.get("/user", async (req, res) => {
@@ -159,14 +85,7 @@ if (!isUpdateAllowed) {
     }
 });
 
-app.post("/sendConnectionRequest", userAuth, async (req, res) => {
-    const user = req.user;
 
-    // Sending a connection request logic here
-    console.log("Sending a connection request");
-
-    res.send("Connection request sent successfully");
-});
 
 connectDB()
 .then(() => {
