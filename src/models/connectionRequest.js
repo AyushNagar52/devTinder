@@ -1,42 +1,35 @@
-const express = require("express");
-const requestRouter = express.Router();
+const mongoose = require("mongoose");
 
-const { userAuth } = require("../middlewares/auth");
-const ConnectionRequest = require("../models/connectionRequest");
-
-requestRouter.post(
-  "/request/send/:status/:toUserId",
-  userAuth,
-  async (req, res) => {
-    try {
-      const fromUserId = req.user._id;
-      const toUserId = req.params.toUserId;
-      const status = req.params.status;
-
-      const allowedStatus = ["ignored", "interested"];
-if (!allowedStatus.includes(status)) {
-  return res
-    .status(400)
-    .json({ message: "Invalid status type: " + status });
-}
-
-    const connectionRequest = new ConnectionRequest({
-        fromUserId,
-        toUserId,
-        status,
-    });
-    const data = await connectionRequest.save();
-
-res.json({
-  message: "Connection Request Sent Successfully!",
-  data,
-});
-    } catch (err) {
-      res.status(400).send("ERROR: " + err.message);
-    }
-
-    res.send(user.firstName + "sent the connect request!");
-  }
+const connectionRequestSchema = new mongoose.Schema(
+  {
+    fromUserId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    toUserId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    status: {
+      type: String,
+      required: true,
+      enum: {
+        values: ["ignored", "interested", "accepted", "rejected"],
+        message: "{VALUE} is incorrect status type",
+      },
+    },
+  },
+  { timestamps: true }
 );
 
-module.exports = requestRouter;
+connectionRequestSchema.pre("save", function (next) {
+  if (this.fromUserId.equals(this.toUserId)) {
+    return next(new Error("You cannot send a connection request to yourself"));
+  }
+
+  next();
+});
+
+module.exports = mongoose.model("ConnectionRequest", connectionRequestSchema);

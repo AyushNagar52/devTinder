@@ -3,11 +3,13 @@ const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema(
+    {
  firstName: {
     type: String,
     required: true,
-    minlength: 4
+    minlength: 4,
+    maxlength: 5,
  },
  lastName: {
     type: String,
