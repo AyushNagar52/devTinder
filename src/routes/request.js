@@ -109,43 +109,4 @@ requestRouter.post(
   }
 );
 
-// Get all accepted connections for the logged-in user.
-requestRouter.get("/user/connections", userAuth, async (req, res) => {
-  try {
-    const requests = await ConnectionRequest.find({
-      status: "accepted",
-      $or: [{ fromUserId: req.user._id }, { toUserId: req.user._id }],
-    })
-      .populate("fromUserId", "firstName lastName emailId photourl about skills")
-      .populate("toUserId", "firstName lastName emailId photourl about skills");
-
-    const connections = requests.map((request) =>
-      request.fromUserId._id.equals(req.user._id)
-        ? request.toUserId
-        : request.fromUserId
-    );
-
-    return res.json({ data: connections });
-  } catch (err) {
-    return res.status(400).json({ message: err.message });
-  }
-});
-
-// Get pending requests received by the logged-in user.
-requestRouter.get("/user/requests", userAuth, async (req, res) => {
-  try {
-    const requests = await ConnectionRequest.find({
-      toUserId: req.user._id,
-      status: "interested",
-    }).populate(
-      "fromUserId",
-      "firstName lastName emailId photourl about skills"
-    );
-
-    return res.json({ data: requests });
-  } catch (err) {
-    return res.status(400).json({ message: err.message });
-  }
-});
-
 module.exports = requestRouter;
